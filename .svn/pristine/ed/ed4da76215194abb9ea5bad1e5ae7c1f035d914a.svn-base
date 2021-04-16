@@ -1,0 +1,98 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace TraceList
+{
+    public class Solicited
+    {
+        public string ReceivedMsg;
+
+        #region DBD_SOLFIELDS: int
+        private enum DBD_SOLFIELDS : int
+        {
+            LUNO = 1,
+            STATDESC = 3,
+            STATUS = 4,
+            MDS = 5
+        }
+        #endregion
+
+        #region Solicited Message Fields
+        public string Luno;
+        public string MsgSeq;
+        public string MsgDescriptor;
+        public string Status;
+        public string MDS;
+        public string Rollover;
+        #endregion
+
+        #region SolicitedMessage()
+        public Solicited()
+        {
+            ReceivedMsg = "";
+        }
+
+        public Solicited(string msg)
+        {
+            ReceivedMsg = msg;
+            Parse();
+        }
+        #endregion
+
+        #region Parse()
+        public int Parse()
+        {
+            string delimChar = "\x1C";
+            char[] delimiter = delimChar.ToCharArray();
+            string[] split = null;
+
+            ResetData();
+            split = this.ReceivedMsg.Split(delimiter, 9);
+            this.Luno = split[(int)DBD_SOLFIELDS.LUNO];
+            this.MsgDescriptor = split[(int)DBD_SOLFIELDS.STATDESC];
+            if (this.MsgDescriptor == "8")
+            {
+                this.Status = split.Length > (int)DBD_SOLFIELDS.STATUS ? split[(int)DBD_SOLFIELDS.STATUS] : "";
+                this.MDS = split.Length > (int)DBD_SOLFIELDS.MDS ? split[(int)DBD_SOLFIELDS.MDS].Substring(3) : "";
+            }
+            else
+            {
+                this.Rollover = split[split.Length - 1];
+            }
+            return 0;
+        }
+        #endregion
+
+        #region DumpParsing()
+        public string DumpParsing()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("======== 91x Solicited Message Parsed =======");
+
+            sb.AppendLine("Message Type: " + "Solicited Message");
+            sb.AppendLine("Luno: " + this.Luno);
+            sb.AppendLine("Status Descriptor: " + this.MsgDescriptor);
+            sb.AppendLine("Status: " + this.Status);
+            sb.AppendLine("MDS: " + this.MDS);
+            sb.AppendLine("Rollover: " + this.Rollover);
+            sb.AppendLine("======== 91x Message End =======");
+
+            return sb.ToString();
+        }
+        #endregion
+
+        #region ResetData()
+        private void ResetData()
+        {
+            this.Luno = "";
+            this.MsgDescriptor = "";
+            this.MsgSeq = "";
+            this.Status = "";
+            this.MDS = "";
+            this.Rollover = "";
+        }
+        #endregion
+    }
+}

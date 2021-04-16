@@ -1,0 +1,150 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+
+namespace TraceList
+{
+    public partial class EdcForm : Form
+    {
+        FileProcess fileProcess;
+
+        public EdcForm()
+        {
+            InitializeComponent();
+        }
+
+        private void TraceForm_Resize(object sender, EventArgs e)
+        {
+            dgvEdcList.Width = this.Width - 10;
+            dgvEdcList.Height = this.Height - 30;
+        }
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+            if (dgvEdcList.SelectedCells.Count <= 0)
+            {
+                MessageBox.Show("No cells are selected ");
+                return;
+            }
+            Clipboard.Clear();
+            string sout = "";
+            for (int i = 0; i < dgvEdcList.SelectedCells.Count; i++)
+            {
+                sout += String.IsNullOrEmpty(sout) ? dgvEdcList.SelectedCells[i].Value.ToString() : "\t" + dgvEdcList.SelectedCells[i].Value.ToString();
+            }
+
+            Clipboard.SetText(sout);
+        }
+
+        private void copyRowToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (dgvEdcList.SelectedRows.Count <= 0)
+            {
+                MessageBox.Show("No rows are selected ");
+                return;
+            }
+            
+            Clipboard.Clear();
+            string sout = "";
+            
+            for (int i = 0; i < dgvEdcList.SelectedRows.Count; i++)
+            {
+                string srow = "";
+                DataGridViewRow row = dgvEdcList.SelectedRows[i];
+                for (int j = 0; j < row.Cells.Count; j++)
+                {
+                    srow += srow == "" ? Convert.ToString(row.Cells[j].Value) : "\t" + Convert.ToString(row.Cells[j].Value);
+                }
+                sout += srow + "\n";
+            }
+            Clipboard.SetText(sout);
+        }
+
+        internal void ProcessMessageFile(string filePath, bool useDecimal)
+        {
+            fileProcess = new FileProcess();
+            fileProcess.UseDecimal = useDecimal;
+
+            dgvEdcList.DataSource = fileProcess.ProcessEdcFile(filePath);
+        }
+
+        private void dgvTraceList_MouseDown(object sender, MouseEventArgs e)
+        {
+
+            if (e.Button == MouseButtons.Right)
+            {
+                DataGridView.HitTestInfo cellInfo = dgvEdcList.HitTest(e.X, e.Y);
+                if (cellInfo.ColumnIndex > -1 && cellInfo.RowIndex > -1)
+                {
+                    // dgvTraceList.Rows[cellInfo.RowIndex].Cells[cellInfo.ColumnIndex].Selected = true;
+                    // Check if this cell selected already
+                    if(!dgvEdcList.SelectedCells.Contains(dgvEdcList.Rows[cellInfo.RowIndex].Cells[cellInfo.ColumnIndex]))
+                    {
+                        for (int i = 0; i < dgvEdcList.SelectedCells.Count; i++)
+                        {
+                            dgvEdcList.SelectedCells[i].Selected = false;
+                        }
+                        dgvEdcList.Rows[cellInfo.RowIndex].Cells[cellInfo.ColumnIndex].Selected = true;
+                    }
+                }
+            }
+        }
+
+        private void contextMenuStrip_Opening(object sender, CancelEventArgs e)
+        {
+            copyToolStripMenuItem.Enabled = dgvEdcList.SelectedCells.Count > 0;
+            copyRowToolStripMenuItem.Enabled = dgvEdcList.SelectedRows.Count > 0;     
+        }
+
+        private void showToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string messageTrackerString = "";
+            messageTrackerString = fileProcess.GetTransMessageTracker(dgvEdcList.SelectedCells[0].RowIndex, true);
+            MessageBox.Show(messageTrackerString, "Message Tracker");
+        }
+
+        private void toClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string messageTrackerString = "";
+            Clipboard.Clear();
+            messageTrackerString = fileProcess.GetTransMessageTracker(dgvEdcList.SelectedCells[0].RowIndex, false);
+            if (!String.IsNullOrEmpty(messageTrackerString))
+            {
+                Clipboard.SetText(messageTrackerString);
+                MessageBox.Show("Copied to clipboard", "Done!");
+            }
+            else
+            {
+                MessageBox.Show("No more information", "Done!");
+            }
+        }
+
+        private void toScreenToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string errorString = "";
+            errorString = fileProcess.GetTransErrorString(dgvEdcList.SelectedCells[0].RowIndex);
+            MessageBox.Show(errorString);
+        }
+
+        private void toClipboardToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            string messageTrackerString = "";
+            Clipboard.Clear();
+            messageTrackerString = fileProcess.GetTransErrorString(dgvEdcList.SelectedCells[0].RowIndex);
+            if (!String.IsNullOrEmpty(messageTrackerString))
+            {
+                Clipboard.SetText(messageTrackerString);
+                MessageBox.Show("Copied to clipboard", "Done!");
+            }
+            else
+            {
+                MessageBox.Show("No more information", "Done!");
+            }
+        }
+    }
+}

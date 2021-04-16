@@ -1,0 +1,36 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+
+namespace TraceList
+{
+    public partial class SetDevice : Form
+    {
+        public SetDevice()
+        {
+            InitializeComponent();
+        }
+
+        private void btnAccept_Click(object sender, EventArgs e)
+        {
+            MainForm owner = (MainForm)this.Owner;
+            owner.cssDevice = txtDevice.Text;
+            Close();
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void SetDevice_Load(object sender, EventArgs e)
+        {
+            MainForm owner = (MainForm)this.Owner;
+            txtDevice.Text = owner.cssDevice;
+        }
+    }
+}

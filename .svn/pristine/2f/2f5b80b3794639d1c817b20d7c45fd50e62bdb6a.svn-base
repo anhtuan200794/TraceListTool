@@ -1,0 +1,148 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+
+namespace TraceList
+{
+    public partial class MainForm : Form
+    {
+        public GridViewForm frmGridViewForm;
+        public string cssDevice = "AFWHICOMM";
+        public bool bUseDecimal = false;
+        private string licenseFile = "license.dat";
+
+        public MainForm()
+        {
+            InitializeComponent();
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            CreateGridViewForm();   
+        }
+
+        private void CreateGridViewForm()
+        {
+            if (frmGridViewForm == null || frmGridViewForm.IsDisposed)
+            {
+                frmGridViewForm = new GridViewForm();
+                frmGridViewForm.MdiParent = this;
+                frmGridViewForm.fileProcess.UseDecimal = bUseDecimal;
+                frmGridViewForm.Visible = false;
+            }
+        }
+        private void traceFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //DVN.Registration.RegScheme reg = new DVN.Registration.RegScheme(licenseFile);
+            //if (reg.isExpired())
+            //{
+            //    MessageBox.Show("This program has expired. Please contact Diebold Support.");
+            //    return;
+            //}
+
+            // Open file
+            openFileDialog.Filter = "Trace File(*.trc)|*.trc";
+            openFileDialog.Title = "[Trace] Open File";
+            openFileDialog.Multiselect = true;
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                CreateGridViewForm();
+                try
+                {
+                    frmGridViewForm.ProcessMessageFile(openFileDialog.FileNames, cssDevice, bUseDecimal);
+                    frmGridViewForm.Show();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Can not parse file trace, error as: " + ex.Message);
+                }
+            }
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AboutBox aboutBox = new AboutBox();
+            aboutBox.ShowDialog();
+        }
+
+        private void eDCFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Open file
+            openFileDialog.Filter = "Pre-Processing EDC File(*.txt, *.dat)|*.txt;*.dat";
+            openFileDialog.Title = "[EDC] Open File";
+            //openFileDialog.Multiselect = true;
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                CreateGridViewForm();
+                frmGridViewForm.ProcessEdcFiles(openFileDialog.FileName, bUseDecimal);
+                frmGridViewForm.Show();
+            }
+        }
+
+        private void cVSFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportCVS exportCVS = new ExportCVS();
+            exportCVS.dataSource = (DataTable)frmGridViewForm.dgvGridViewList.DataSource;
+            exportCVS.ShowDialog();
+        }
+
+        private void asExcelFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            saveFileDialog.Filter = "Excel XML File(*.xls)|*.xls";
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                FileProcess.exportToExcel(((DataTable)frmGridViewForm.dgvGridViewList.DataSource), saveFileDialog.FileName);
+            }  
+        }
+
+        private void compareToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CompareFiles compareFiles = new CompareFiles();
+            compareFiles.Owner = this;
+            compareFiles.ShowDialog();
+        }
+
+        private void setDeviceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SetDevice setDevice = new SetDevice();
+            setDevice.Owner = this;
+            setDevice.ShowDialog();
+        }
+
+        private void useDecimalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            bUseDecimal = useDecimalToolStripMenuItem.Checked;
+        }
+
+        //private void rToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    DVN.Registration.RegScheme reg = new DVN.Registration.RegScheme(licenseFile);
+
+        //    RegistrationBox dlg = new RegistrationBox();
+        //    if (dlg.ShowDialog() == DialogResult.OK)
+        //    {
+        //        if (reg.doRegister(dlg.RegCode))
+        //        {
+        //            MessageBox.Show("Registration Succeeded");
+        //        }
+        //        else
+        //        {
+        //            MessageBox.Show("Invalid Registration Code. Please Try Again");
+        //        }
+                
+        //    }
+        //}
+
+     
+    }
+}

@@ -1,0 +1,160 @@
+namespace TraceList
+{
+    partial class GridViewForm
+    {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            this.components = new System.ComponentModel.Container();
+            this.dgvGridViewList = new System.Windows.Forms.DataGridView();
+            this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyRowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.messageTrackerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.errorTrackerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toScreenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toClipboardToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvGridViewList)).BeginInit();
+            this.contextMenuStrip.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // dgvGridViewList
+            // 
+            this.dgvGridViewList.AllowUserToAddRows = false;
+            this.dgvGridViewList.AllowUserToDeleteRows = false;
+            this.dgvGridViewList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvGridViewList.ContextMenuStrip = this.contextMenuStrip;
+            this.dgvGridViewList.Location = new System.Drawing.Point(1, 1);
+            this.dgvGridViewList.Name = "dgvGridViewList";
+            this.dgvGridViewList.ReadOnly = true;
+            this.dgvGridViewList.RowTemplate.ReadOnly = true;
+            this.dgvGridViewList.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvGridViewList.Size = new System.Drawing.Size(579, 272);
+            this.dgvGridViewList.TabIndex = 0;
+            this.dgvGridViewList.MouseDown += new System.Windows.Forms.MouseEventHandler(this.dgvGridViewList_MouseDown);
+            // 
+            // contextMenuStrip
+            // 
+            this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.copyToolStripMenuItem,
+            this.copyRowToolStripMenuItem,
+            this.messageTrackerToolStripMenuItem,
+            this.errorTrackerToolStripMenuItem});
+            this.contextMenuStrip.Name = "contextMenuStrip";
+            this.contextMenuStrip.Size = new System.Drawing.Size(167, 92);
+            this.contextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip_Opening);
+            // 
+            // copyToolStripMenuItem
+            // 
+            this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.copyToolStripMenuItem.Text = "&Copy Cell";
+            this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
+            // 
+            // copyRowToolStripMenuItem
+            // 
+            this.copyRowToolStripMenuItem.Name = "copyRowToolStripMenuItem";
+            this.copyRowToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.copyRowToolStripMenuItem.Text = "Copy &Row";
+            this.copyRowToolStripMenuItem.Click += new System.EventHandler(this.copyRowToolStripMenuItem_Click);
+            // 
+            // messageTrackerToolStripMenuItem
+            // 
+            this.messageTrackerToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.showToolStripMenuItem,
+            this.toClipboardToolStripMenuItem});
+            this.messageTrackerToolStripMenuItem.Name = "messageTrackerToolStripMenuItem";
+            this.messageTrackerToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.messageTrackerToolStripMenuItem.Text = "&Message Tracker";
+            // 
+            // showToolStripMenuItem
+            // 
+            this.showToolStripMenuItem.Name = "showToolStripMenuItem";
+            this.showToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
+            this.showToolStripMenuItem.Text = "To &Screen";
+            this.showToolStripMenuItem.Click += new System.EventHandler(this.showToolStripMenuItem_Click);
+            // 
+            // toClipboardToolStripMenuItem
+            // 
+            this.toClipboardToolStripMenuItem.Name = "toClipboardToolStripMenuItem";
+            this.toClipboardToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
+            this.toClipboardToolStripMenuItem.Text = "To &Clipboard";
+            this.toClipboardToolStripMenuItem.Click += new System.EventHandler(this.toClipboardToolStripMenuItem_Click);
+            // 
+            // errorTrackerToolStripMenuItem
+            // 
+            this.errorTrackerToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toScreenToolStripMenuItem,
+            this.toClipboardToolStripMenuItem1});
+            this.errorTrackerToolStripMenuItem.Name = "errorTrackerToolStripMenuItem";
+            this.errorTrackerToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.errorTrackerToolStripMenuItem.Text = "&Error Tracker";
+            // 
+            // toScreenToolStripMenuItem
+            // 
+            this.toScreenToolStripMenuItem.Name = "toScreenToolStripMenuItem";
+            this.toScreenToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
+            this.toScreenToolStripMenuItem.Text = "To &Screen";
+            this.toScreenToolStripMenuItem.Click += new System.EventHandler(this.toScreenToolStripMenuItem_Click);
+            // 
+            // toClipboardToolStripMenuItem1
+            // 
+            this.toClipboardToolStripMenuItem1.Name = "toClipboardToolStripMenuItem1";
+            this.toClipboardToolStripMenuItem1.Size = new System.Drawing.Size(145, 22);
+            this.toClipboardToolStripMenuItem1.Text = "To &Clipboard";
+            this.toClipboardToolStripMenuItem1.Click += new System.EventHandler(this.toClipboardToolStripMenuItem1_Click);
+            // 
+            // GridViewForm
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(582, 273);
+            this.Controls.Add(this.dgvGridViewList);
+            this.Name = "GridViewForm";
+            this.Text = "Trace";
+            this.Resize += new System.EventHandler(this.TraceForm_Resize);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvGridViewList)).EndInit();
+            this.contextMenuStrip.ResumeLayout(false);
+            this.ResumeLayout(false);
+
+        }
+
+        #endregion
+
+        public System.Windows.Forms.DataGridView dgvGridViewList;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem messageTrackerToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem errorTrackerToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem copyRowToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem showToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toClipboardToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toScreenToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toClipboardToolStripMenuItem1;
+    }
+}

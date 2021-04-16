@@ -1,0 +1,29 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+
+namespace TraceList
+{
+    public partial class SelectCompareFields : Form
+    {
+        public SelectCompareFields()
+        {
+            InitializeComponent();
+        }
+
+        
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+        }
+
+        private void btnProceed_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.OK;
+        }
+    }
+}

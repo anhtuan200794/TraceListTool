@@ -1,0 +1,83 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace TraceList
+{
+    public class Unsolicited
+    {
+        public string ReceivedMsg;
+
+        #region DBD_UNSOLFIELDS: int
+        public enum DBD_UNSOLFIELDS : int
+        {
+            LUNO = 1,
+            STATUS = 3,
+            MDS = 4
+        }
+        #endregion
+
+        #region Solicited Message Fields
+        public string Luno;
+        public string Status;
+        public string MDS;
+        #endregion
+
+        #region SolicitedMessage()
+        public Unsolicited()
+        {
+            ReceivedMsg = "";
+        }
+
+        public Unsolicited(string msg)
+        {
+            ReceivedMsg = msg;
+            Parse();
+        }
+        #endregion
+
+        #region Parse()
+        public int Parse()
+        {
+            string delimChar = "\x1C";
+            char[] delimiter = delimChar.ToCharArray();
+            string[] split = null;
+
+            ResetData();
+            split = this.ReceivedMsg.Split(delimiter, 9);
+            this.Luno = split[(int)DBD_UNSOLFIELDS.LUNO];
+            this.Status = split[(int)DBD_UNSOLFIELDS.STATUS];
+
+            this.MDS = split.Length > (int)DBD_UNSOLFIELDS.MDS ? split[(int)DBD_UNSOLFIELDS.MDS] : "";
+
+            return 0;
+        }
+        #endregion
+
+        #region DumpParsing()
+        public string DumpParsing()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("======== 91x UnSolicited Message Parsed =======");
+
+            sb.AppendLine("Message Type: " + "UnSolicited Message");
+            sb.AppendLine("Luno: " + this.Luno);
+            sb.AppendLine("Status: " + this.Status);
+            sb.AppendLine("MDS: " + this.MDS);
+            sb.AppendLine("======== 91x Message End =======");
+
+            return sb.ToString();
+        }
+        #endregion
+
+        #region ResetData()
+        private void ResetData()
+        {
+            this.Luno = "";
+            this.Status = "";
+            this.MDS = "";
+        }
+        #endregion
+    }
+}

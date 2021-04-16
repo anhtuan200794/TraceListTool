@@ -1,0 +1,184 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace TraceList
+{
+    public class FunctionCommand
+    {
+        public string ReceivedMessage;
+
+        #region Function Command Field
+        private enum DBD_FUNCFIELDS : int
+        {
+            LUNO = 1,           // LUNO field in message          
+            SEQNUM = 2,         // Sequence Number
+            NEXTSTATE = 3,      // Next State
+            DISPSTR = 4,        // Dispense String
+            TRANSNUM = 5,       // Transaction Number (Len = 4)
+            FUNCTION = 5,       // Function String (variable)
+            OTHER = 6           // For message coordination (len = 1), card return/retain flag (len = 1), printer flag (len = 1)
+        }
+        #endregion
+
+        #region Function Command Fields
+        // For Function Command Message
+        public string Luno;
+        public int SeqNum;
+        public string NextState;// 3 chars
+        public string DispStr;
+        public int TransNum;
+        public string FuncIden;
+        public string MsgCoNum; // 1 char
+        public int RetainCard;
+
+        public string ScreenData; // Data to be printed on receipt
+        public string ReceiptData; // Data to be printed on receipt
+        public string JournalData; // Data to be printed on jounal
+        #endregion
+
+        public FunctionCommand()
+        {
+
+        }
+
+        public FunctionCommand(string rcvMsg)
+        {
+            ReceivedMessage = rcvMsg;
+            Parse();
+        }
+
+        public int Parse()
+        {
+            string delimChar = "\x1C";
+            char[] delimiter = delimChar.ToCharArray();
+            string[] split = null;
+
+            split = this.ReceivedMessage.Split(delimiter, 24);
+
+            this.Luno = split[(int)DBD_FUNCFIELDS.LUNO];
+            this.SeqNum = split[(int)DBD_FUNCFIELDS.SEQNUM] == "" ? 0 : Convert.ToInt32(split[(int)DBD_FUNCFIELDS.SEQNUM]);
+            this.NextState = split[(int)DBD_FUNCFIELDS.NEXTSTATE];
+            this.DispStr = split[(int)DBD_FUNCFIELDS.DISPSTR];
+            this.TransNum = split[(int)DBD_FUNCFIELDS.TRANSNUM] == "" ? 0 : Convert.ToInt32(split[(int)DBD_FUNCFIELDS.TRANSNUM].Substring(0, 4));
+            this.FuncIden = split[(int)DBD_FUNCFIELDS.FUNCTION].Substring(4);
+
+            this.ReceiptData = "";
+            this.JournalData = "";
+
+            // Correct Dispense String
+            if (!String.IsNullOrEmpty(this.DispStr))
+            {
+                delimChar = "\x1D";
+                delimiter = delimChar.ToCharArray();
+                split = this.DispStr.Split(delimiter);
+                this.DispStr = split[0];
+            }
+            return 0;
+
+        }
+
+        #region contain ID
+        /// <summary>
+        /// Check if funtion contain ID
+        /// </summary>
+        /// <returns></returns>
+        public bool ContainCommandID(string ID)
+        {
+            if ((FuncIden.StartsWith(ID)) ||
+                 (FuncIden.Contains("\u001D" + ID)))
+            {
+                return true;
+            }
+            return false;
+        }
+        #endregion contain ID
+
+        #region Serialize()
+        public string Serialize()
+        {
+            const string FieldSeparator = "\x1C";
+            const string GroupSeparator = "\x1D";
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append("4");
+            sb.Append(FieldSeparator);
+            sb.Append(Luno);            // Luno
+            sb.Append(FieldSeparator);
+            if (SeqNum > 0)
+                sb.Append(SeqNum.ToString());// Message Sequence Number
+            sb.Append(FieldSeparator);
+            sb.Append(NextState);        // Next State
+            sb.Append(FieldSeparator);
+            sb.Append(DispStr);         // Dispense String
+            sb.Append(FieldSeparator);
+
+            // Transaction Number
+            sb.Append(TransNum.ToString("0000"));
+
+            // Function Identifiers
+            if (!String.IsNullOrEmpty(FuncIden))
+            {
+                sb.Append(FuncIden);
+                sb.Append(GroupSeparator);
+            }
+
+            if (String.IsNullOrEmpty(ScreenData))
+            {
+                sb.Append("5000"); // Default for screen
+            }
+            else
+            {
+                sb.Append(ScreenData);
+            }
+
+            sb.Append(FieldSeparator);
+            sb.Append(MsgCoNum);
+            sb.Append(RetainCard.ToString("0"));
+
+            // Data Printer
+            bool bNoPrintData = true;
+            if (!String.IsNullOrEmpty(ReceiptData))
+            {
+                bNoPrintData = false;
+                sb.Append("2"); // Print on receipt
+                sb.Append(ReceiptData);
+            }
+
+            if (!String.IsNullOrEmpty(JournalData))
+            {
+                if (!bNoPrintData)
+                    sb.Append(FieldSeparator);
+                bNoPrintData = false;
+                sb.Append("1"); // Print on journal
+                sb.Append(JournalData);
+            }
+
+            if (bNoPrintData)
+            {
+                sb.Append("0"); // No Print data
+            }
+            return sb.ToString();
+        }
+        #endregion
+
+
+        #region DumpMessageInfo()
+        public string DumpMessageInfo()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("======== 91x Message Parsed =======");
+
+            sb.AppendLine("Message Type: " + "Function Command Message");
+            sb.AppendLine(this.ReceiptData);
+            sb.AppendLine("-------------------------------");
+            sb.AppendLine("-------------------------------");
+
+            sb.AppendLine("======== 91x Message End =======");
+
+            return sb.ToString();
+        }
+        #endregion
+    }
+}

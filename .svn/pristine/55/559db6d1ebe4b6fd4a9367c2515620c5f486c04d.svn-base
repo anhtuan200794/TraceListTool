@@ -1,0 +1,233 @@
+namespace TraceList
+{
+    partial class MainForm
+    {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            this.mnuMain = new System.Windows.Forms.MenuStrip();
+            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.traceFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.eDCFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.asExcelFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.cVSFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.compareToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.settingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.setDeviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.useDecimalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.mnuMain.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // mnuMain
+            // 
+            this.mnuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem,
+            this.settingToolStripMenuItem,
+            this.helpToolStripMenuItem});
+            this.mnuMain.Location = new System.Drawing.Point(0, 0);
+            this.mnuMain.Name = "mnuMain";
+            this.mnuMain.Size = new System.Drawing.Size(599, 24);
+            this.mnuMain.TabIndex = 1;
+            this.mnuMain.Text = "MainMenu";
+            // 
+            // fileToolStripMenuItem
+            // 
+            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openToolStripMenuItem,
+            this.toolStripMenuItem1,
+            this.compareToolStripMenuItem,
+            this.toolStripMenuItem2,
+            this.exitToolStripMenuItem});
+            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
+            this.fileToolStripMenuItem.Text = "&File";
+            // 
+            // openToolStripMenuItem
+            // 
+            this.openToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.traceFileToolStripMenuItem,
+            this.eDCFileToolStripMenuItem});
+            this.openToolStripMenuItem.Name = "openToolStripMenuItem";
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.openToolStripMenuItem.Text = "&Open";
+            // 
+            // traceFileToolStripMenuItem
+            // 
+            this.traceFileToolStripMenuItem.Name = "traceFileToolStripMenuItem";
+            this.traceFileToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.traceFileToolStripMenuItem.Text = "&Trace File";
+            this.traceFileToolStripMenuItem.Click += new System.EventHandler(this.traceFileToolStripMenuItem_Click);
+            // 
+            // eDCFileToolStripMenuItem
+            // 
+            this.eDCFileToolStripMenuItem.Name = "eDCFileToolStripMenuItem";
+            this.eDCFileToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.eDCFileToolStripMenuItem.Text = "&EDC File";
+            this.eDCFileToolStripMenuItem.Click += new System.EventHandler(this.eDCFileToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.asExcelFileToolStripMenuItem,
+            this.cVSFileToolStripMenuItem});
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItem1.Text = "&Export";
+            // 
+            // asExcelFileToolStripMenuItem
+            // 
+            this.asExcelFileToolStripMenuItem.Name = "asExcelFileToolStripMenuItem";
+            this.asExcelFileToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
+            this.asExcelFileToolStripMenuItem.Text = "As Excel File (XML)";
+            this.asExcelFileToolStripMenuItem.Click += new System.EventHandler(this.asExcelFileToolStripMenuItem_Click);
+            // 
+            // cVSFileToolStripMenuItem
+            // 
+            this.cVSFileToolStripMenuItem.Name = "cVSFileToolStripMenuItem";
+            this.cVSFileToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
+            this.cVSFileToolStripMenuItem.Text = "As CVS File";
+            this.cVSFileToolStripMenuItem.Click += new System.EventHandler(this.cVSFileToolStripMenuItem_Click);
+            // 
+            // compareToolStripMenuItem
+            // 
+            this.compareToolStripMenuItem.Enabled = false;
+            this.compareToolStripMenuItem.Name = "compareToolStripMenuItem";
+            this.compareToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.compareToolStripMenuItem.Text = "&Compare";
+            this.compareToolStripMenuItem.Visible = false;
+            this.compareToolStripMenuItem.Click += new System.EventHandler(this.compareToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(149, 6);
+            // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Text = "E&xit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            // 
+            // settingToolStripMenuItem
+            // 
+            this.settingToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.setDeviceToolStripMenuItem,
+            this.useDecimalToolStripMenuItem});
+            this.settingToolStripMenuItem.Name = "settingToolStripMenuItem";
+            this.settingToolStripMenuItem.Size = new System.Drawing.Size(53, 20);
+            this.settingToolStripMenuItem.Text = "&Setting";
+            // 
+            // setDeviceToolStripMenuItem
+            // 
+            this.setDeviceToolStripMenuItem.Name = "setDeviceToolStripMenuItem";
+            this.setDeviceToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
+            this.setDeviceToolStripMenuItem.Text = "Set &Device";
+            this.setDeviceToolStripMenuItem.Click += new System.EventHandler(this.setDeviceToolStripMenuItem_Click);
+            // 
+            // useDecimalToolStripMenuItem
+            // 
+            this.useDecimalToolStripMenuItem.CheckOnClick = true;
+            this.useDecimalToolStripMenuItem.Name = "useDecimalToolStripMenuItem";
+            this.useDecimalToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
+            this.useDecimalToolStripMenuItem.Text = "Use D&ecimal";
+            this.useDecimalToolStripMenuItem.Click += new System.EventHandler(this.useDecimalToolStripMenuItem_Click);
+            // 
+            // helpToolStripMenuItem
+            // 
+            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.rToolStripMenuItem,
+            this.aboutToolStripMenuItem});
+            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(40, 20);
+            this.helpToolStripMenuItem.Text = "&Help";
+            // 
+            // rToolStripMenuItem
+            // 
+            this.rToolStripMenuItem.Name = "rToolStripMenuItem";
+            this.rToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.rToolStripMenuItem.Text = "Register";
+            this.rToolStripMenuItem.Click += new System.EventHandler(this.rToolStripMenuItem_Click);
+            // 
+            // aboutToolStripMenuItem
+            // 
+            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.aboutToolStripMenuItem.Text = "&About";
+            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            // 
+            // MainForm
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(599, 370);
+            this.Controls.Add(this.mnuMain);
+            this.IsMdiContainer = true;
+            this.MainMenuStrip = this.mnuMain;
+            this.Name = "MainForm";
+            this.Text = "Transaction List Tool";
+            this.Load += new System.EventHandler(this.MainForm_Load);
+            this.mnuMain.ResumeLayout(false);
+            this.mnuMain.PerformLayout();
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
+        }
+
+        #endregion
+
+        private System.Windows.Forms.MenuStrip mnuMain;
+        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem traceFileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem eDCFileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+        private System.Windows.Forms.OpenFileDialog openFileDialog;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog;
+        private System.Windows.Forms.ToolStripMenuItem asExcelFileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem cVSFileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem compareToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem settingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem setDeviceToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem useDecimalToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem rToolStripMenuItem;
+
+    }
+}
+

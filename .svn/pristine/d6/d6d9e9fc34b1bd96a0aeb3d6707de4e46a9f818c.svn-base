@@ -1,0 +1,961 @@
+using System;
+using System.Data;
+using System.Configuration;
+using System.IO;
+using System.Collections.Generic;
+
+namespace TraceList
+{
+    public enum DBD_TRANS_STEP : int
+    {
+        UNKNOWN = -1,
+        FCMD_WAITING = 1,   // Consumer Request sent and waiting for responding
+        FCMD_RESPONSED = 2, // Function command received
+        FCMD_DISPENSING = 3, // Function command received and dispensing
+        FCMD_REJECTED = 4,  // Function command has been rejected
+        SOL_FCMD_WAITING = 5, // There is an error and waiting for fcmd
+        USOL_FCMD_WATING = 6, // There is an error and waiting for fcmd
+
+        FINISH = 7,          // Ready status received
+        FINISH_WITH_ERROR = 8 // Ready status received but errors happened before
+    }
+
+    public class FileProcess
+    {
+
+        private string MESSAGE_DELIM = "\u0001";
+
+        List<string> messageCollection = new List<string>();
+        public bool UseDecimal = false;
+        private List<TransactionInfo> transList = new List<TransactionInfo>();
+        public string CssDevice = "AFWHICOMM";
+
+        private enum DBD_MSG_TYPE : int
+        {
+            CREQ = 1,
+            FCMD = 2
+        }
+
+        #region ProcessMessageFile()
+        public DataTable ProcessMessageFile(string sSource)
+        {
+            StreamReader sourceFile = new StreamReader(sSource);
+            string msg = "";
+            string sBuffer = "";
+            char[] delim = new char[] { ' ', '\t'};
+
+            string time = "";
+            string date = "";
+            string currentDevice = "";
+            string currentFunctionId = "";
+            int msgFileMode = 0; // 0 - version 1.3; 1 = XV version
+            int count = 0;
+            try
+            {
+                
+                sBuffer = sourceFile.ReadLine();
+                if (messageCollection != null)
+                    messageCollection.Clear();
+
+                while (!sourceFile.EndOfStream )
+                {
+                    if (String.IsNullOrEmpty(sBuffer))
+                    {
+                        sBuffer = sourceFile.ReadLine();
+                        continue;
+                    }
+
+                    // ThangPC added
+                    // Ignore null line 
+                    if (sBuffer.StartsWith("\0"))
+                    {
+                        sBuffer = sourceFile.ReadLine();
+                        continue;
+                    }
+
+                    if (sBuffer.StartsWith("Device"))
+                    {
+                        if (!String.IsNullOrEmpty(msg))
+                            messageCollection.Add(GetStringFromHexString(msg) + MESSAGE_DELIM + time + MESSAGE_DELIM + date);
+
+                        sBuffer = StandardizeString(sBuffer);
+                        string[] header = sBuffer.Split(delim);
+                        date = header[header.Length - 2].Contains("/") ? header[header.Length - 2] : "";
+                        time = header[header.Length - 1];
+                    }
+                    // for Agilis XV
+                    else if (sBuffer.StartsWith("Message Owner"))
+                    {
+                        if (!String.IsNullOrEmpty(msg))
+                            messageCollection.Add(GetStringFromHexString(msg) + MESSAGE_DELIM + time + MESSAGE_DELIM + date);
+
+                        sBuffer = StandardizeString(sBuffer);
+                        int iStart = sBuffer.IndexOf("Size");
+                        if (iStart > 0)// version 2.1 or later
+                        {
+                            date = sBuffer.Substring(iStart + 5, 5);
+                            time = sBuffer.Substring(iStart + 11 );
+                        }
+
+                        currentDevice = sBuffer.Substring(16, 9);
+                        msgFileMode = 1;
+                    }
+                    else if (sBuffer.StartsWith("["))
+                    {
+                        if (currentDevice == CssDevice && (currentFunctionId == "00" || currentFunctionId == "01"))
+                        {
+                            int startIndex = sBuffer.IndexOf("[") + 1;
+                            int length = sBuffer.IndexOf("]") - startIndex;
+                            msg += sBuffer.Substring(startIndex, length); // [ <--- 50 chars --->]
+                        }
+                    }
+                    else // Device
+                    {
+                        if (msgFileMode == 0)
+                        {
+                            sBuffer = StandardizeString(sBuffer);
+                            string[] device = sBuffer.Split(delim);
+                            currentDevice = device[0].Trim();
+                            currentFunctionId = device[5].Trim();
+                            msg = "";
+                        }
+                        else
+                        {
+                            /*
+                            int iStart = 0;
+                            
+                            sBuffer = StandardizeString(sBuffer);
+                            iStart = sBuffer.IndexOf("VIRT");
+                            
+                            if (iStart >= 0)
+                            {
+                                currentFunctionId = sBuffer.Substring(iStart + 11, 2);
+ 
+                            }
+                            */
+                            sBuffer = sBuffer.Trim();
+                            if (sBuffer.Length >= 13)
+                            {
+                                currentFunctionId = sBuffer.Substring(11, 2);
+
+                                if (currentFunctionId != "00" && currentFunctionId != "01") 
+                                {
+                                    currentFunctionId = sBuffer.Substring(12, 2);
+                                }
+                            }
+                            msg = "";
+                        }
+                    }
+                    sBuffer = sourceFile.ReadLine();
+                }
+            }
+            catch (System.Exception e)
+            {
+                System.Windows.Forms.MessageBox.Show("ProcessMessageFile \n- Error: " + e.Message + "\n - Trace: " + e.StackTrace);
+            }
+            finally
+            {
+                // Get last message
+                if ((msg == null) || string.IsNullOrEmpty(msg.Trim()))
+                    messageCollection.Add(GetStringFromHexString(msg) + MESSAGE_DELIM + time + MESSAGE_DELIM + date);
+
+                // Close files
+                if (sourceFile != null)
+                {
+                    sourceFile.Close();
+                }
+            }
+            DataTable dt = DoMessageProcess();
+            
+            return dt;
+        }
+        #endregion
+
+        #region Standardize
+        private string StandardizeString(string msg)
+        {
+            string sout = msg.Trim();
+            while (sout.Contains("  "))
+            {
+                sout = sout.Replace("  ", " ");
+            }
+            return sout;
+        }
+
+        private string GetStringFromHexString(string hexstring)
+        {
+            string HEX = "0123456789ABCDEF";
+            string org = hexstring;
+            string sout = "";
+            org = StandardizeString(org);
+            org = org.ToUpper();
+            for (int i = 0; i < org.Length - 1; i += 3) 
+            {
+                sout += (char)(HEX.IndexOf(org[i]) * 16 + HEX.IndexOf(org[i+1]));
+            }
+            
+            return sout;
+        }
+
+        private DataTable DoMessageProcess()
+        {
+            string msg = "";
+            string time = "";
+            string date = "";
+            char[] delim = new char[] { '\u0001' };
+            int i;
+
+            FunctionCommand fc = new FunctionCommand();
+            ConsumerRequest cr = new ConsumerRequest();
+            Solicited sol = new Solicited();
+            Unsolicited usol = new Unsolicited();
+
+            TransactionInfo transInfo = new TransactionInfo();
+
+            DataTable temp_dt = new DataTable();
+            temp_dt.Columns.Add("No", Type.GetType("System.Int32"));
+            temp_dt.Columns.Add("Date");
+            temp_dt.Columns.Add("Start Time");
+            temp_dt.Columns.Add("End Time");
+            temp_dt.Columns.Add("Card Number");
+            temp_dt.Columns.Add("Tran Id", Type.GetType("System.Int32"));
+            temp_dt.Columns.Add("Opkey", Type.GetType("System.String"));
+            temp_dt.Columns.Add("Amount", Type.GetType("System.Int64"));
+            temp_dt.Columns.Add("Disp String", Type.GetType("System.String"));
+            temp_dt.Columns.Add("Csst 1", Type.GetType("System.Int32"));
+            temp_dt.Columns.Add("Csst 2", Type.GetType("System.Int32"));
+            temp_dt.Columns.Add("Csst 3", Type.GetType("System.Int32"));
+            temp_dt.Columns.Add("Csst 4", Type.GetType("System.Int32"));
+            temp_dt.Columns.Add("Result");
+            temp_dt.Columns.Add("Transaction Type");
+
+            try
+            {
+                transList.Clear();
+                for (i = 0; i < messageCollection.Count; ++i)
+                {
+                    string[] split = messageCollection[i].Split(delim);
+                    msg = split[0];
+                    time = split[1];
+                    date = split[2];
+
+                    if (msg.StartsWith("11"))       // Consumer request
+                    {
+                        if (!String.IsNullOrEmpty(transInfo.StartTime))
+                        {
+                            AddToDataSource(temp_dt, transInfo);
+                        }
+
+                        cr.ReceivedMsg = msg;
+                        if (cr.Parse() == 0)
+                        {
+                            try
+                            {
+                                transInfo.ResetAllData();
+
+                                transInfo.TranStep = DBD_TRANS_STEP.FCMD_WAITING;
+                                transInfo.Amount = String.IsNullOrEmpty(cr.Dollar) ? 0 : Convert.ToInt64(cr.Dollar);
+                                if (!UseDecimal && transInfo.Amount > 0)
+                                {
+                                    transInfo.Amount = transInfo.Amount / 100;
+                                }
+
+                                transInfo.ConsumerName = cr.ConsumerName;
+                                transInfo.CardNumber = cr.PAN;
+                                transInfo.Opkey = cr.Opkey;
+                                transInfo.Date = date;
+                                transInfo.StartTime = time;
+                                transInfo.Rollover = cr.Rollover;
+                                transInfo.MessageTracker.Add(date + MESSAGE_DELIM + time + MESSAGE_DELIM + msg);
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Windows.Forms.MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
+                            }
+                        }
+                    }
+                    else if (msg.StartsWith("4"))   // Function command
+                    {
+                        fc.ReceivedMessage = msg;
+                        if (fc.Parse() == 0)
+                        {
+                            if (
+                                transInfo.TranStep == DBD_TRANS_STEP.FCMD_WAITING
+                            || transInfo.TranStep == DBD_TRANS_STEP.SOL_FCMD_WAITING
+                            || transInfo.TranStep == DBD_TRANS_STEP.USOL_FCMD_WATING
+                            || transInfo.TranStep == DBD_TRANS_STEP.FCMD_REJECTED
+                            )
+                            {
+                                transInfo.TranStep = DBD_TRANS_STEP.FCMD_RESPONSED;
+                                transInfo.TransId = fc.TransNum;
+                                if (fc.ContainCommandID("A") || fc.ContainCommandID("B")) // || fc.FuncIden.Contains("C"))
+                                {
+                                    transInfo.TranStep = DBD_TRANS_STEP.FCMD_DISPENSING;
+
+                                    // TODO: Update number of notes will be dispensed
+                                    // ThangPC sua ngay 16-06-2010
+                                    transInfo.DispStr = fc.DispStr;
+                                    if (transInfo.DispStr.Length == 2) 
+                                    {
+                                        transInfo.NoteDispensed[0] = transInfo.DispStr.Substring(0, 2);                                      
+                                    }
+                                    else if (transInfo.DispStr.Length == 4) 
+                                    {
+                                        transInfo.NoteDispensed[0] = transInfo.DispStr.Substring(0, 2);
+                                        transInfo.NoteDispensed[1] = transInfo.DispStr.Substring(2, 2);                            
+                                    }
+                                    else if (transInfo.DispStr.Length == 6)
+                                    {
+                                        transInfo.NoteDispensed[0] = transInfo.DispStr.Substring(0, 2);
+                                        transInfo.NoteDispensed[1] = transInfo.DispStr.Substring(2, 2);
+                                        transInfo.NoteDispensed[2] = transInfo.DispStr.Substring(4, 2);                                       
+                                    }
+                                    else if (transInfo.DispStr.Length == 8)
+                                    {
+                                        transInfo.NoteDispensed[0] = transInfo.DispStr.Substring(0, 2);
+                                        transInfo.NoteDispensed[1] = transInfo.DispStr.Substring(2, 2);
+                                        transInfo.NoteDispensed[2] = transInfo.DispStr.Substring(4, 2);
+                                        transInfo.NoteDispensed[3] = transInfo.DispStr.Substring(6, 2);
+                                    }
+                                    transInfo.TransInfo = "Withdrawal";
+                                }
+                                else if (!fc.ContainCommandID("B") && fc.ContainCommandID("C"))
+                                {
+                                    transInfo.TranStep = DBD_TRANS_STEP.FCMD_DISPENSING;
+                                    transInfo.TransInfo = "Withdrawal";
+                                }
+
+                                transInfo.MessageTracker.Add(date + MESSAGE_DELIM + time + MESSAGE_DELIM + msg);
+                            }
+
+                        }
+                    }
+                    else if (msg.StartsWith("22"))  // Solicited
+                    {
+                        sol.ReceivedMsg = msg;
+                        if (sol.Parse() == 0)
+                        {
+                            if (sol.MsgDescriptor == "9" || sol.MsgDescriptor == "B")
+                            {
+                                //if (transInfo.TranStep != DBD_TRANS_STEP.FCMD_DISPENSING)
+                                //{
+                                //    transInfo.DispStr = "";
+                                //    transInfo.NoteDispensed[0] = "00";
+                                //    transInfo.NoteDispensed[1] = "00";
+                                //    transInfo.NoteDispensed[2] = "00";
+                                //    transInfo.NoteDispensed[3] = "00";
+                                //}
+                                //else
+                                //{
+                                //    transInfo.NoteDispensed = GetDispensedCount(transInfo.Rollover, sol.Rollover);
+                                //    transInfo.Rollover = sol.Rollover;
+                                //}
+                                if (
+                                    transInfo.TranStep == DBD_TRANS_STEP.FCMD_RESPONSED
+                                || transInfo.TranStep == DBD_TRANS_STEP.FCMD_DISPENSING
+                                )
+                                {
+                                    //transInfo.NoteDispensed = GetDispensedCount(transInfo.Rollover, sol.Rollover);                                  
+                                    transInfo.Rollover = sol.Rollover;
+                                    transInfo.TranStep = transInfo.ErrorCodeList.Count > 0 ? DBD_TRANS_STEP.FINISH_WITH_ERROR : DBD_TRANS_STEP.FINISH;
+                                    transInfo.EndTime = time;
+                                    transInfo.MessageTracker.Add(date + MESSAGE_DELIM + time + MESSAGE_DELIM + GetReadableString(msg));
+                                }
+
+                            }
+                            else if (sol.MsgDescriptor == "D" || sol.MsgDescriptor == "A") // Reject
+                            {
+                                if (transInfo.TranStep != DBD_TRANS_STEP.UNKNOWN)
+                                {
+                                    transInfo.TranStep = DBD_TRANS_STEP.FCMD_REJECTED;
+                                    transInfo.MessageTracker.Add(messageCollection[i]);
+                                }
+                            }
+                            else if (sol.MsgDescriptor == "8" && sol.MDS != "")
+                            {
+                                transInfo.TranStep = DBD_TRANS_STEP.SOL_FCMD_WAITING;
+                                transInfo.MessageTracker.Add(messageCollection[i]);
+                                transInfo.ErrorCodeList.Add(date + MESSAGE_DELIM + time + MESSAGE_DELIM + sol.MDS);
+                            }
+                        }
+                    }
+                    else if (msg.StartsWith("12"))   // Unsolicited
+                    {
+                        usol.ReceivedMsg = msg;
+                        if (usol.Parse() == 0)
+                        {
+                            if (
+                                transInfo.TranStep == DBD_TRANS_STEP.FCMD_RESPONSED
+                            || transInfo.TranStep == DBD_TRANS_STEP.FCMD_DISPENSING
+                            )
+                            {
+                                // TODO: study more in this case
+                                transInfo.TranStep = DBD_TRANS_STEP.USOL_FCMD_WATING;
+                                transInfo.MessageTracker.Add(messageCollection[i]);
+                                transInfo.ErrorCodeList.Add(date + MESSAGE_DELIM + time + MESSAGE_DELIM + sol.MDS);
+                            }
+                        }
+                    }
+                }
+
+                // Last transaction
+                if (!String.IsNullOrEmpty(transInfo.StartTime))
+                {
+                    AddToDataSource(temp_dt, transInfo);
+                }
+            }
+            finally { }
+            /* catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show("DoMessageProcess" + ex.Message + "\nMessage: " + msg);
+            }
+             */
+            return temp_dt;
+        }
+
+        private string GetReadableString(string msg)
+        {
+            string sout = msg;
+
+            sout = sout.Replace('\x1C', '.');
+            sout = sout.Replace('\x1D', '.');
+            sout = sout.Replace('\x1E', '.');
+            sout = sout.Replace('\x0C', '.');
+
+            return sout;
+        }
+
+        private string[] GetDispensedCount(string old_rollover, string new_rollover)
+        {
+            if (String.IsNullOrEmpty(old_rollover) || String.IsNullOrEmpty(new_rollover))
+                return new string[] { "00", "00", "00", "00" };
+
+            string[] sout = new string[4];
+            for (int i = 0; i < 4; i++)
+            {
+                int num1 = Convert.ToInt32(old_rollover.Substring(i*3, 3));
+                int num2 = Convert.ToInt32(new_rollover.Substring(i*3, 3));
+                num2 += num2 < num1 ? 256 : 0;
+                sout[i] = ((int)(num2 - num1)).ToString("00");
+            }
+            return sout;
+        }
+
+        private void AddToDataSource(DataTable dt, TransactionInfo trans)
+        {
+            //if (trans.DispStr == "" || trans.Amount == 0)
+            //    return;
+
+            // Add to translist
+            trans.Id = dt.Rows.Count + 1;
+            transList.Add(trans.Clone());
+
+            // Add to datatable
+            DataRow row = dt.NewRow();
+            row["No"] = dt.Rows.Count + 1;
+            row["Date"] = trans.Date;
+            row["Start Time"] = trans.StartTime;
+            row["End Time"] = trans.EndTime;
+            row["Card Number"] = trans.CardNumber;
+            row["Tran Id"] = trans.TransId;
+            row["Opkey"] = trans.Opkey;
+            row["Amount"] = trans.Amount;
+            row["Disp String"] = trans.DispStr;
+            row["Csst 1"] = trans.NoteDispensed[0];
+            row["Csst 2"] = trans.NoteDispensed[1];
+            row["Csst 3"] = trans.NoteDispensed[2];
+            row["Csst 4"] = trans.NoteDispensed[3];
+            row["Result"] = trans.TranStep.ToString();
+            row["Transaction Type"] = trans.TransInfo;
+
+            dt.Rows.Add(row);
+ 
+        }
+
+        private void AddEdcRecordToDataSource(DataTable dt, TransactionInfo trans)
+        {
+            // Add to datatable
+            DataRow row = dt.NewRow();
+            row["No"] = dt.Rows.Count + 1;
+            row["Date"] = trans.Date;
+            row["End Time"] = trans.EndTime;
+            row["Card Number"] = trans.CardNumber;
+            row["Tran Id"] = trans.TransId;
+            row["Trans Type"] = trans.TransType;
+            row["Amount"] = String.Format("{0:n}", trans.Amount);
+            row["Dispensed"] = String.Format("{0:n}", trans.DispensedAmt);
+            row["Return Code"] = trans.ReturnCode;
+            row["Result"] = "FINISHED";
+
+            dt.Rows.Add(row);
+        }
+
+        public static void exportToExcel(DataTable source, string fileName)
+        {
+
+            System.IO.StreamWriter excelDoc;
+
+            excelDoc = new System.IO.StreamWriter(fileName);
+            const string startExcelXML = "<xml version>\r\n<Workbook " +
+                  "xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\"\r\n" +
+                  " xmlns:o=\"urn:schemas-microsoft-com:office:office\"\r\n " +
+                  "xmlns:x=\"urn:schemas-    microsoft-com:office:" +
+                  "excel\"\r\n xmlns:ss=\"urn:schemas-microsoft-com:" +
+                  "office:spreadsheet\">\r\n <Styles>\r\n " +
+                  "<Style ss:ID=\"Default\" ss:Name=\"Normal\">\r\n " +
+                  "<Alignment ss:Vertical=\"Bottom\"/>\r\n <Borders/>" +
+                  "\r\n <Font/>\r\n <Interior/>\r\n <NumberFormat/>" +
+                  "\r\n <Protection/>\r\n </Style>\r\n " +
+                  "<Style ss:ID=\"BoldColumn\">\r\n <Font " +
+                  "x:Family=\"Swiss\" ss:Bold=\"1\"/>\r\n </Style>\r\n " +
+                  "<Style     ss:ID=\"StringLiteral\">\r\n <NumberFormat" +
+                  " ss:Format=\"@\"/>\r\n </Style>\r\n <Style " +
+                  "ss:ID=\"Decimal\">\r\n <NumberFormat " +
+                  "ss:Format=\"0.0000\"/>\r\n </Style>\r\n " +
+                  "<Style ss:ID=\"Integer\">\r\n <NumberFormat " +
+                  "ss:Format=\"0\"/>\r\n </Style>\r\n <Style " +
+                  "ss:ID=\"DateLiteral\">\r\n <NumberFormat " +
+                  "ss:Format=\"mm/dd/yyyy;@\"/>\r\n </Style>\r\n " +
+                  "</Styles>\r\n ";
+            const string endExcelXML = "</Workbook>";
+
+            int rowCount = 0;
+            int sheetCount = 1;
+            /*
+           <xml version>
+           <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+           xmlns:o="urn:schemas-microsoft-com:office:office"
+           xmlns:x="urn:schemas-microsoft-com:office:excel"
+           xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+           <Styles>
+           <Style ss:ID="Default" ss:Name="Normal">
+             <Alignment ss:Vertical="Bottom"/>
+             <Borders/>
+             <Font/>
+             <Interior/>
+             <NumberFormat/>
+             <Protection/>
+           </Style>
+           <Style ss:ID="BoldColumn">
+             <Font x:Family="Swiss" ss:Bold="1"/>
+           </Style>
+           <Style ss:ID="StringLiteral">
+             <NumberFormat ss:Format="@"/>
+           </Style>
+           <Style ss:ID="Decimal">
+             <NumberFormat ss:Format="0.0000"/>
+           </Style>
+           <Style ss:ID="Integer">
+             <NumberFormat ss:Format="0"/>
+           </Style>
+           <Style ss:ID="DateLiteral">
+             <NumberFormat ss:Format="mm/dd/yyyy;@"/>
+           </Style>
+           </Styles>
+           <Worksheet ss:Name="Sheet1">
+           </Worksheet>
+           </Workbook>
+           */
+            excelDoc.Write(startExcelXML);
+            excelDoc.Write("<Worksheet ss:Name=\"Sheet" + sheetCount + "\">");
+            excelDoc.Write("<Table>");
+            excelDoc.Write("<Row>");
+            for (int x = 0; x < source.Columns.Count; x++)
+            {
+                excelDoc.Write("<Cell ss:StyleID=\"BoldColumn\"><Data ss:Type=\"String\">");
+                excelDoc.Write(source.Columns[x].ColumnName);
+                excelDoc.Write("</Data></Cell>");
+            }
+            excelDoc.Write("</Row>");
+            foreach (DataRow x in source.Rows)
+            {
+                rowCount++;
+                //if the number of rows is > 64000 create a new page to continue output
+
+                if (rowCount == 64000)
+                {
+                    rowCount = 0;
+                    sheetCount++;
+                    excelDoc.Write("</Table>");
+                    excelDoc.Write(" </Worksheet>");
+                    excelDoc.Write("<Worksheet ss:Name=\"Sheet" + sheetCount + "\">");
+                    excelDoc.Write("<Table>");
+                }
+                excelDoc.Write("<Row>"); //ID=" + rowCount + "
+
+                for (int y = 0; y < source.Columns.Count; y++)
+                {
+                    System.Type rowType;
+                    rowType = x[y].GetType();
+                    switch (rowType.ToString())
+                    {
+                        case "System.String":
+                            string XMLstring = x[y].ToString();
+                            XMLstring = XMLstring.Trim();
+                            XMLstring = XMLstring.Replace("&", "&");
+                            XMLstring = XMLstring.Replace(">", ">");
+                            XMLstring = XMLstring.Replace("<", "<");
+                            excelDoc.Write("<Cell ss:StyleID=\"StringLiteral\">" +
+                                           "<Data ss:Type=\"String\">");
+                            excelDoc.Write(XMLstring);
+                            excelDoc.Write("</Data></Cell>");
+                            break;
+                        case "System.DateTime":
+                            //Excel has a specific Date Format of YYYY-MM-DD followed by  
+
+                            //the letter 'T' then hh:mm:sss.lll Example 2005-01-31T24:01:21.000
+
+                            //The Following Code puts the date stored in XMLDate 
+
+                            //to the format above
+
+                            DateTime XMLDate = (DateTime)x[y];
+                            string XMLDatetoString = ""; //Excel Converted Date
+
+                            XMLDatetoString = XMLDate.Year.ToString() +
+                                 "-" +
+                                 (XMLDate.Month < 10 ? "0" +
+                                 XMLDate.Month.ToString() : XMLDate.Month.ToString()) +
+                                 "-" +
+                                 (XMLDate.Day < 10 ? "0" +
+                                 XMLDate.Day.ToString() : XMLDate.Day.ToString()) +
+                                 "T" +
+                                 (XMLDate.Hour < 10 ? "0" +
+                                 XMLDate.Hour.ToString() : XMLDate.Hour.ToString()) +
+                                 ":" +
+                                 (XMLDate.Minute < 10 ? "0" +
+                                 XMLDate.Minute.ToString() : XMLDate.Minute.ToString()) +
+                                 ":" +
+                                 (XMLDate.Second < 10 ? "0" +
+                                 XMLDate.Second.ToString() : XMLDate.Second.ToString()) +
+                                 ".000";
+                            excelDoc.Write("<Cell ss:StyleID=\"DateLiteral\">" +
+                                         "<Data ss:Type=\"DateTime\">");
+                            excelDoc.Write(XMLDatetoString);
+                            excelDoc.Write("</Data></Cell>");
+                            break;
+                        case "System.Boolean":
+                            excelDoc.Write("<Cell ss:StyleID=\"StringLiteral\">" +
+                                        "<Data ss:Type=\"String\">");
+                            excelDoc.Write(x[y].ToString());
+                            excelDoc.Write("</Data></Cell>");
+                            break;
+                        case "System.Int16":
+                        case "System.Int32":
+                        case "System.Int64":
+                        case "System.Byte":
+                            excelDoc.Write("<Cell ss:StyleID=\"Integer\">" +
+                                    "<Data ss:Type=\"Number\">");
+                            excelDoc.Write(x[y].ToString());
+                            excelDoc.Write("</Data></Cell>");
+                            break;
+                        case "System.Decimal":
+                        case "System.Double":
+                            excelDoc.Write("<Cell ss:StyleID=\"Decimal\">" +
+                                  "<Data ss:Type=\"Number\">");
+                            excelDoc.Write(x[y].ToString());
+                            excelDoc.Write("</Data></Cell>");
+                            break;
+                        case "System.DBNull":
+                            excelDoc.Write("<Cell ss:StyleID=\"StringLiteral\">" +
+                                  "<Data ss:Type=\"String\">");
+                            excelDoc.Write("");
+                            excelDoc.Write("</Data></Cell>");
+                            break;
+                        default:
+                            throw (new Exception(rowType.ToString() + " not handled."));
+                    }
+                }
+                excelDoc.Write("</Row>");
+            }
+            excelDoc.Write("</Table>");
+            excelDoc.Write(" </Worksheet>");
+            excelDoc.Write(endExcelXML);
+            excelDoc.Close();
+        }
+
+        #endregion
+
+        internal string GetTransErrorString(int transIndex)
+        {
+            string sout = "";
+            TransactionInfo transtrack = transList[transIndex];
+            
+            for (int i = 0; i < transtrack.ErrorCodeList.Count; i++)
+            {
+                string[] time_msgs = transtrack.ErrorCodeList[i].Split(new char[] { '\u0001' });
+
+                sout += time_msgs[0] + "\r\n";
+                sout += "----------------\r\n";
+                sout += time_msgs[1] + "\r\n";
+            }
+            return sout;
+        }
+
+        internal string GetTransMessageTracker(int transIndex, bool readable)
+        {
+            string sout = "";
+            TransactionInfo transtrack = transList[transIndex];
+
+            // header
+            for (int i = 0; i < transtrack.MessageTracker.Count; i++)
+            {
+                string[] time_msgs = transtrack.MessageTracker[i].Split(new char[] { '\u0001' });
+
+                sout += time_msgs[0] + " " + time_msgs[1] + "\r\n";
+                sout += "---------------------\r\n";
+                sout += readable ? GetReadableString(time_msgs[2]) + "\r\n" : GetTraceMessage(time_msgs[2]) + "\r\n";
+                sout += "\r\n";
+            }
+            return sout;
+        }
+
+        private string GetTraceMessage(string msg)
+        {
+            string sout = "";
+            string hexstring = "";
+            string readable = "";
+            int i;
+
+            string sin = msg;           
+            for (i = 0; i < sin.Length; i++)
+            {
+                if (i % 16 == 0 && hexstring != "" && readable != "")
+                {
+                    sout += "[ " + hexstring + "]    " + readable + "\r\n";
+                    hexstring = "";
+                    readable = "";
+                }
+
+                char ch = sin[i];
+                hexstring += String.Format("{0:X2} ", (int)ch);
+                readable += 32 < (int)ch && (int)ch < 128 ? ch : '.';
+            }
+            
+            if (hexstring != "" && readable != "")
+            {
+                if (i % 16 != 0)
+                {
+                    hexstring += new String(' ', (16 - (i % 16)) * 3);
+                    readable += new String('.', 16 - (i % 16));
+                }
+                sout += "[ " + hexstring + "]    " + readable + "\r\n";
+                hexstring = "";
+                readable = "";
+            }
+
+            return sout;
+        }
+
+        internal DataTable ProcessEdcFile(string filePath)
+        {
+            int i1 = 0, i2=0;
+            
+            string line = "";
+            string time = "";
+            int line_step = -1;
+            TransactionInfo tranInfo = new TransactionInfo();
+
+            
+            bool thereIsPendingTxn = false;
+            // Create data source
+            DataTable dt = new DataTable();
+            /*
+            dt.Columns.Add("No", Type.GetType("System.Int32"));
+            dt.Columns.Add("Date");
+            dt.Columns.Add("End Time");
+            dt.Columns.Add("Card Number");
+            dt.Columns.Add("Tran Id", Type.GetType("System.Int32"));
+            dt.Columns.Add("Trans Type");
+            dt.Columns.Add("Amount");
+            dt.Columns.Add("Dispensed");
+            dt.Columns.Add("Return Code");
+            dt.Columns.Add("Result");
+            */
+            //DataTable temp_dt = new DataTable();
+
+            dt.Columns.Add("No", Type.GetType("System.Int32"));
+            dt.Columns.Add("Date");
+            dt.Columns.Add("Start Time");
+            dt.Columns.Add("End Time");
+            dt.Columns.Add("Card Number");
+            dt.Columns.Add("Tran Id", Type.GetType("System.Int32"));
+            dt.Columns.Add("Opkey", Type.GetType("System.String"));
+            dt.Columns.Add("Amount", Type.GetType("System.Int64"));
+            dt.Columns.Add("Disp String", Type.GetType("System.String"));
+            dt.Columns.Add("Csst 1", Type.GetType("System.Int32"));
+            dt.Columns.Add("Csst 2", Type.GetType("System.Int32"));
+            dt.Columns.Add("Csst 3", Type.GetType("System.Int32"));
+            dt.Columns.Add("Csst 4", Type.GetType("System.Int32"));
+            dt.Columns.Add("Result");
+            dt.Columns.Add("Transaction Type");
+
+            
+            // reader to read file
+            StreamReader stReader = null;
+
+            try
+            {
+
+                stReader = new StreamReader(filePath);
+                while (!stReader.EndOfStream)
+                {
+                    line = stReader.ReadLine();
+
+                    if (String.IsNullOrEmpty(line))
+                        continue;
+
+                    if (line.Length < 17)  // line must start with date time string as follow: 08/02/10 14:03:21 (17 chars)
+                    {
+                        continue;
+                    }
+
+                    if (line.StartsWith("  "))
+                    {
+                        continue;
+                    }
+                    //line = StandardizeString(line);
+
+                    time = line.Substring(0, 17);
+
+                    line = line.Substring(29);
+
+                    try
+                    {
+                        if (line.Contains("CARD :"))
+                        {
+                            // add the pending transaction to source if we have any
+                            if (thereIsPendingTxn)
+                            {
+                                AddToDataSource(dt, tranInfo);
+                                thereIsPendingTxn = false;
+                            }
+
+
+                            // reset data & process new transaction
+                            tranInfo.ResetAllData();
+
+                            tranInfo.CardNumber = line.Substring(16).Trim();
+
+                            tranInfo.StartTime = time;
+
+                            tranInfo.Date = time.Substring(0, 9);
+
+                            thereIsPendingTxn = false;
+                        }
+                        else if (line.Contains("TRANSACTION REQUEST"))
+                        {
+                            tranInfo.TranStep = DBD_TRANS_STEP.FCMD_WAITING;
+
+                            tranInfo.Opkey = line.Substring(line.IndexOf('[') + 1, 8);
+                            string txnAmount = line.Substring(line.IndexOf("AMT:") + 4).Trim();
+                            tranInfo.Amount = Int32.Parse(txnAmount);
+                            tranInfo.NoteDispensed[0] = "00";
+                            tranInfo.NoteDispensed[1] = "00";
+                            tranInfo.NoteDispensed[2] = "00";
+                            tranInfo.NoteDispensed[3] = "00";
+
+
+                            thereIsPendingTxn = false;
+
+                            tranInfo.StartTime = time;
+
+
+                        }
+                        else if (line.Contains("TRANSACTION REPLY"))
+                        {
+                            tranInfo.TranStep = DBD_TRANS_STEP.FCMD_RESPONSED;
+
+                            tranInfo.EndTime = time;
+
+                            i1 = line.IndexOf("FUNC") + 4;
+                            i2 = line.IndexOf("SEQ");
+                            string functionID = line.Substring(i1, i2 - i1);
+
+                            if (functionID.StartsWith("B") || functionID.StartsWith("C") ||
+                                functionID.Contains("\u001dB") || functionID.Contains("\u001dC"))
+                            {
+                                tranInfo.TransInfo = "Withdrawal";
+                                tranInfo.TranStep = DBD_TRANS_STEP.FCMD_DISPENSING;
+
+                                // mark there is pending txn to add to list
+                                thereIsPendingTxn = true;
+                            }
+                            tranInfo.TransId = Int32.Parse(line.Substring(line.IndexOf("SEQ.") + 4));
+                        }
+
+                        else if (line.Contains("CASH REQUEST"))
+                        {
+                            tranInfo.EndTime = time;
+
+                            string notes = line.Substring(line.IndexOf(": DENOM") + 7).Trim();
+                            string[] csst_notes = notes.Split(' ');
+                            for (i1 = 0; i1 < csst_notes.Length; i1++)
+                            {
+                                if (!string.IsNullOrEmpty(csst_notes[i1].Trim()))
+                                {
+                                    tranInfo.NoteDispensed[(int)(csst_notes[i1].Trim()[0] - 'A')] = csst_notes[i1].Trim().Substring(2);
+                                }
+                            }
+
+                            thereIsPendingTxn = true;
+                        }
+                        else if (line.Contains("CASH TAKEN"))
+                        {
+                            tranInfo.TranStep = DBD_TRANS_STEP.FINISH;
+
+                            tranInfo.EndTime = time;
+
+                            // add to source
+                            AddToDataSource(dt, tranInfo);
+
+                            thereIsPendingTxn = false;
+                        }
+                        else if (line.Contains("TRANSACTION FINISH"))
+                        {
+                            tranInfo.EndTime = time;
+
+                            if (thereIsPendingTxn)
+                            {
+                                AddToDataSource(dt, tranInfo);
+                                thereIsPendingTxn = false;
+                            }
+                        }
+
+                        else if (line.Contains("TRANSACTION START"))
+                        {
+                            if (thereIsPendingTxn)
+                            {
+                                AddToDataSource(dt, tranInfo);
+                                thereIsPendingTxn = false;
+                            }
+                        }
+
+
+                    }
+                    catch (Exception ex)
+                    {
+                        // throw new Exception("Current line: " + line);
+                        throw new Exception("Current line: " + line, ex);
+                    }
+
+
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                if (stReader != null)
+                {
+                    stReader.Close();
+                    stReader = null;
+                }
+                
+            }
+            return dt;
+        }
+    }
+}

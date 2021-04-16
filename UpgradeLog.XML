@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="TraceListTool">
+</Property><Property Name="Solution File" Value="D:\SVN\TraceListTool\TraceListTool.sln">
+</Property><Property Name="User Options File" Value="D:\SVN\TraceListTool\TraceListTool.suo">
+</Property><Property Name="Date" Value="Tuesday, August 09, 2016">
+</Property><Property Name="Time" Value="16:17 PM">
+</Property></Properties><Event ErrorLevel="0" Project="" Source="TraceListTool.sln" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceListTool.sln">
+</Event><Event ErrorLevel="0" Project="" Source="TraceListTool.suo" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceListTool.suo">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\TraceList.csproj" Description="Project file successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\TraceList.csproj">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\AboutBox.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\AboutBox.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\AboutBox.Designer.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\AboutBox.Designer.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\CompareFiles.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\CompareFiles.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\CompareFiles.Designer.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\CompareFiles.Designer.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\ConsumerRequest.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\ConsumerRequest.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\ExportCVS.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\ExportCVS.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\ExportCVS.Designer.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\ExportCVS.Designer.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\FileProcess.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\FileProcess.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\FunctionCommand.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\FunctionCommand.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\MainForm.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\MainForm.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\MainForm.Designer.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\MainForm.Designer.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\Program.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\Program.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\Properties\AssemblyInfo.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\Properties\AssemblyInfo.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\Properties\Resources.Designer.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\Properties\Resources.Designer.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\Properties\Settings.Designer.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\Properties\Settings.Designer.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\RegistrationBox.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\RegistrationBox.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\RegistrationBox.Designer.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\RegistrationBox.Designer.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\SelectCompareFields.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\SelectCompareFields.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\SelectCompareFields.Designer.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\SelectCompareFields.Designer.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\SetDevice.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\SetDevice.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\SetDevice.Designer.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\SetDevice.Designer.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\Solicited.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\Solicited.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\StringToken.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\StringToken.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\GridView.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\GridView.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\GridView.Designer.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\GridView.Designer.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\TransactionInfo.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\TransactionInfo.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\Unsolicited.cs" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\Unsolicited.cs">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\Properties\Settings.settings" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\Properties\Settings.settings">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\icon.ico" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\icon.ico">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\AboutBox.resx" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\AboutBox.resx">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\CompareFiles.resx" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\CompareFiles.resx">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\ExportCVS.resx" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\ExportCVS.resx">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\MainForm.resx" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\MainForm.resx">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\Properties\Resources.resx" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\Properties\Resources.resx">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\GridView.resx" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\GridView.resx">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\RegistrationBox.resx" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\RegistrationBox.resx">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\SelectCompareFields.resx" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\SelectCompareFields.resx">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\SetDevice.resx" Description="File successfully backed up as D:\SVN\TraceListTool\Backup\TraceList\SetDevice.resx">
+</Event><Event ErrorLevel="1" Project="TraceList" Source="TraceList\TraceList.csproj" Description="Your project is targeting .NET Framework 2.0 or 3.0. If your project uses assemblies requiring a newer .NET Framework, your project will fail to build. You can change the .NET Framework version by clicking Properties on the project menu and then selecting a new version in the '.NET Framework' dropdown box. (In Visual Basic, this is located on the Compile tab by clicking the 'Advanced Compiler Options...' button.)">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\TraceList.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="TraceList" Source="TraceList\TraceList.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="TraceListTool.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="TraceListTool.sln" Description="Converted">
+</Event><Event ErrorLevel="0" Project="TraceList" Source="TraceList\TraceList.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event></UpgradeLog>

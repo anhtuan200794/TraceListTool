@@ -1,0 +1,77 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace TraceList
+{
+    /// <summary>
+    /// Handle token to parse a string.
+    /// </summary>
+    public class StringToken
+    {
+        private string str;
+        private string delim;
+
+        public StringToken(string _str)
+        {
+            this.str = _str;
+            this.delim = "";
+        }
+
+        public StringToken(string _str, string _delim)
+        {
+            this.str = String.Format("%s", _str);
+            this.delim = String.Format("%s", _delim);
+        }
+
+        public string NextToken()
+        {
+            int iFirstDelim = 0;
+
+            if (this.delim == "")
+            {
+                this.str = this.str.Trim();
+                iFirstDelim = this.str.IndexOfAny(new char[] { ' ', '\r', '\n', '\t' });
+            }
+            else
+            {
+                this.str = this.str.Trim();
+                iFirstDelim = this.str.IndexOf(this.delim, 0);
+            }
+
+            if (iFirstDelim != -1)
+            {
+                string sToken;
+                sToken = this.str.Substring(0, iFirstDelim);
+                this.str = this.str.Substring(iFirstDelim, this.str.Length - iFirstDelim);
+                return sToken;
+            }
+            else
+            {
+                string sToken;
+                sToken = this.str;
+                this.str = String.Empty;
+                return sToken;
+            }
+        }
+
+        public void SetDelima(string _delim)
+        {
+            if (_delim == null)
+            {
+                this.delim = String.Format("%s", "");
+            }
+            else
+            {
+                this.delim = String.Format("%s", _delim);
+            }
+        }
+
+        public bool HasMoreToken()
+        {
+            this.str = this.str.Trim();
+            return (bool)(this.str != "");
+        }
+
+    }
+}

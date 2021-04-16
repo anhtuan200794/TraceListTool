@@ -1,0 +1,223 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+using System.IO;
+
+namespace TraceList
+{
+    public partial class CompareFiles : Form
+    {
+        public CompareFiles()
+        {
+            InitializeComponent();
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void btnEdcBrowse_Click(object sender, EventArgs e)
+        {
+            openFileDialog.Title = "Compare Files: Open Processing File";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                txtProcessingFile.Text = openFileDialog.FileName;
+            }
+        }
+
+        private void btnRefBrowse_Click(object sender, EventArgs e)
+        {
+            openFileDialog.Title = "Compare Files: Open Reference File";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                txtReferenceFile.Text = openFileDialog.FileName;
+            }
+        }
+
+        private void btnProceed_Click(object sender, EventArgs e)
+        {
+            if (!System.IO.File.Exists(txtProcessingFile.Text) || !System.IO.File.Exists(txtReferenceFile.Text))
+            {
+                MessageBox.Show("One or more files does not exist. Please check before proceeding", "File not found");
+                return;
+            }
+
+            // Process comparation
+            DataTable dt1 = FileParsing(txtProcessingFile.Text);
+            DataTable dt2 = FileParsing(txtReferenceFile.Text);
+
+            if (dt1 != null && dt2 != null)
+            {
+                MainForm owner = (MainForm)this.Owner;
+                DataTable comparationResult = GetCompareResult(dt1, dt2);
+
+                if (comparationResult != null)
+                {
+                    owner.frmGridViewForm.dgvGridViewList.DataSource = comparationResult;
+                    if (!owner.frmGridViewForm.Visible)
+                    {
+                        owner.frmGridViewForm.Show();
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("There are some errors in file data. The process has been cancelled");
+            }
+                
+            this.Close();
+        }
+
+        private DataTable GetCompareResult(DataTable procDataSource, DataTable refDataSource)
+        {
+            DataTable dtResult = new DataTable();
+            DataRow procRow;
+            DataRow refRow;
+            SelectCompareFields compareFields = new SelectCompareFields();
+            List<string> comparationFieldList = new List<string>();
+
+            int refNum = 0;
+            int procNum = 0;
+            bool bFlag = true;
+
+            // Header
+            dtResult.Columns.Add("No");
+            dtResult.Columns.Add("Row Num");
+
+            {
+                for (int i = 0; i < refDataSource.Columns.Count; ++i )
+                {
+                    dtResult.Columns.Add(refDataSource.Columns[i].Caption);
+                    compareFields.clbAvaiableFields.Items.Add(refDataSource.Columns[i].Caption);
+                }
+
+                if (compareFields.ShowDialog() == DialogResult.Cancel)
+                {
+                    MessageBox.Show("The process has been cancelled due to user operation");
+                    compareFields.Close();
+                    return null;
+                }
+                else
+                {
+                    for (int i = 0; i < compareFields.clbAvaiableFields.CheckedItems.Count; i++)
+                    {
+                        comparationFieldList.Add((string)compareFields.clbAvaiableFields.CheckedItems[i]);
+                    }
+                    compareFields.Close();
+                }
+            }
+            
+            while (procNum < procDataSource.Rows.Count)
+            {
+                procRow = procDataSource.Rows[procNum];
+                while (refNum < refDataSource.Rows.Count)
+                {
+                    refRow = refDataSource.Rows[refNum];
+                    bFlag = true;
+                    for (int i = 0; i < comparationFieldList.Count; i++)
+                    {
+                        string content1 = (string)procRow[comparationFieldList[i]];
+                        string content2 = (string)refRow[comparationFieldList[i]];
+                        if (content1.Trim() != content2.Trim())
+                        {
+                            bFlag = false;
+                            break;
+                        }
+                    }
+
+                    if (bFlag)
+                    {
+                        refNum++;
+                        procNum++;
+                        break ;
+                    }
+                    else
+                    {
+                        DataRow newRow = dtResult.NewRow();
+                        newRow[0] = dtResult.Rows.Count + 1;
+                        newRow[1] = (refNum+1).ToString();
+                        for (int i = 0; i < refDataSource.Columns.Count; i++)
+                        {
+                            newRow[i+2] = refRow[i];
+                        }
+                        
+                        dtResult.Rows.Add(newRow);
+                        refNum++;
+                    }
+                }
+
+                if (refNum >= refDataSource.Rows.Count)
+                {
+                    MessageBox.Show(procNum.ToString() + " does not exist in reference list");
+                    break;
+                }
+            }
+
+            for (int i = refNum; i < refDataSource.Rows.Count; i++ )
+            {
+                DataRow newRow = dtResult.NewRow();
+                newRow[0] = dtResult.Rows.Count + 1;
+                newRow[1] = (i + 1).ToString();
+                for (int j = 0; j < refDataSource.Columns.Count; j++)
+                {
+                    newRow[j+2] = refDataSource.Rows[i][j];
+                }
+                dtResult.Rows.Add(newRow);
+            }
+
+            return dtResult;
+        }
+
+        private DataTable FileParsing(string filepath)
+        {
+            DataTable dt = new DataTable();
+            StreamReader streamReader = null; 
+            string[] row;
+
+            try
+            {
+                streamReader = new StreamReader(filepath);
+
+                // Header
+                string line = streamReader.ReadLine();
+                if (!String.IsNullOrEmpty(line))
+                {
+                    row = line.Split(",".ToCharArray());
+                    for (int i = 0; i < row.Length; i++)
+                    {
+                        dt.Columns.Add(row[i]);
+                    }
+                }
+
+                while (!streamReader.EndOfStream)
+                {
+                    line = streamReader.ReadLine();
+                    if (!String.IsNullOrEmpty(line))
+                    {
+                        row = line.Split(",".ToCharArray());
+                        dt.Rows.Add(row);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Failed");
+                return null;
+            }
+            finally
+            {
+                if (streamReader != null)
+                {
+                    streamReader.Close();
+                }
+            }
+            
+            return dt;
+        }
+    }
+}

@@ -1,0 +1,183 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace TraceList
+{
+    public class ConsumerRequest
+    {
+        /* Class Properties */
+        #region Customer Request Message Field Order
+        private enum DBD_CRFIELDS : int
+        {
+            LUNO = 1,           // LUNO field in messages          
+            NONE = 2,           // Empty Field
+            TIME_VAR = 3,       // Time Variant                   
+            TOF = 4,            // Top of form flag (First char)      
+            MSGCOORD = 4,       // Message Coordination Number (second char)
+            TRACK2 = 5,
+            TRACK3 = 6,
+            OPKEY = 7,          // Function Operation Key Buffer
+            DOLLAR = 8,         // Amount
+            PINBUF = 9,        //PIN Buffer
+            BUFB = 10,
+            BUFC = 11,
+            CREQTAIL = 12,      // Message tail
+        }
+        #endregion
+
+        #region Diebold Message Fields
+        // For Customer Request Message
+        public string Luno; /* For CREQ and Func Cmd */
+        public string TOF;
+        public string MsgCoNum; /* For CREQ and Func Cmd */
+        public string Track2;
+        public string Track3;
+        public string Opkey;
+        public string Dollar;
+        public string PinBuffer;
+        public string GenBufferB;
+        public string GenBufferC;
+        public string Track1;
+        public string Rollover;
+        public string MsgTail;
+
+        public string PAN; // Card Number
+        public string ConsumerName;
+
+        public string ReceivedMsg;
+        #endregion
+
+        public ConsumerRequest()
+        {
+            ReceivedMsg = "";
+        }
+        public ConsumerRequest(string msg)
+        {
+            ReceivedMsg = msg;
+            Parse();
+        }
+
+        #region Parse()
+        public int Parse()
+        {
+            string delimChar = "\x1C";
+            char[] delimiter = delimChar.ToCharArray();
+            string[] split = null;
+
+            split = this.ReceivedMsg.Split(delimiter, 24);
+
+            this.Luno = split[(int)DBD_CRFIELDS.LUNO];
+            this.TOF = split[(int)DBD_CRFIELDS.TOF].Substring(0, 1);
+
+            this.MsgCoNum = split[(int)DBD_CRFIELDS.MSGCOORD].Substring(1, 1);
+            this.Track2 = split[(int)DBD_CRFIELDS.TRACK2];
+            this.Track3 = split[(int)DBD_CRFIELDS.TRACK3];
+            this.Opkey = split[(int)DBD_CRFIELDS.OPKEY].Replace(" ", "_");
+            this.Dollar = split[(int)DBD_CRFIELDS.DOLLAR];
+            this.PinBuffer = split[(int)DBD_CRFIELDS.PINBUF];
+            this.GenBufferB = split[(int)DBD_CRFIELDS.BUFB];
+            this.GenBufferC = split[(int)DBD_CRFIELDS.BUFC];
+
+            // Track 1
+            if (split.Length > (int)DBD_CRFIELDS.CREQTAIL)
+            {
+                this.MsgTail = split[(int)DBD_CRFIELDS.CREQTAIL];
+                if (this.MsgTail.StartsWith("1") && this.MsgTail.Length > 12)
+                {
+                    int indexOfFS = this.MsgTail.IndexOf("\u001c");
+                    if (indexOfFS > 0)
+                    {
+                        this.Track1 = this.MsgTail.Substring(0, indexOfFS - 1);
+                        this.MsgTail = this.MsgTail.Substring(indexOfFS + 1);
+                    }
+                    else
+                    {
+                        this.Track1 = this.MsgTail.Substring(0);
+                        this.MsgTail = String.Empty;
+                    }
+                }
+            }
+
+            // Rollover: Last?
+            //if (this.MsgTail.Length >= 12 && split[split.Length - 1].Length == 12) // Rollover
+            if (split[split.Length - 1].Length == 12) // Rollover
+            {
+                this.Rollover = split[split.Length - 1];
+                this.MsgTail = String.Empty;
+            }
+
+            // Track 2: Standardize
+            if (!String.IsNullOrEmpty(Track2))
+            {
+                Track2 = Track2.Substring(1, Track2.Length - 2);
+            }
+
+            // Pan
+            if (!String.IsNullOrEmpty(this.Track2))
+            {
+                if (this.Track2.Contains("="))
+                {
+                    this.PAN = this.Track2.Substring(0, this.Track2.IndexOf("="));
+                }
+                else
+                {
+                    PAN = Track2;
+                }
+            }
+
+            // Consumer Name
+            if (!String.IsNullOrEmpty(this.Track1) && this.Track1.Length > 12)
+            {
+                this.Track1 = this.Track1.Substring(1);
+                
+                this.ConsumerName = "";
+            }
+
+            return 0;
+        }
+        #endregion
+
+        #region DumpParsing()
+        public string DumpParsing()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("======== 91x Message Parsed =======");
+
+            sb.AppendLine("Message Type: " + "Customer Request Message");
+            sb.AppendLine("Luno: " + this.Luno);
+            sb.AppendLine("TOF: " + this.TOF);
+            sb.AppendLine("Msg Coord Num: " + this.MsgCoNum);
+            sb.AppendLine("Track 2: " + this.Track2);
+            sb.AppendLine("Track 3: " + this.Track3);
+            sb.AppendLine("OpKey: " + this.Opkey);
+            sb.AppendLine("Dollar: " + this.Dollar);
+            sb.AppendLine("Buffer B: " + this.GenBufferB);
+            sb.AppendLine("Buffer C: " + this.GenBufferC);
+            sb.AppendLine("Track 1: " + this.Track1);
+            sb.AppendLine("-------------------------------");
+            sb.AppendLine("PAN: " + this.PAN);
+            sb.AppendLine("Consumer Name: " + this.ConsumerName);
+            sb.AppendLine("-------------------------------");
+
+            sb.AppendLine("======== 91x Message End =======");
+
+            return sb.ToString();
+        }
+        #endregion
+
+        public FunctionCommand CreateResponse()
+        {
+            FunctionCommand fcmd = new FunctionCommand();
+
+            fcmd.Luno = this.Luno;
+            fcmd.MsgCoNum = this.MsgCoNum;
+            fcmd.DispStr = "";
+            fcmd.FuncIden = "";
+            fcmd.NextState = "";
+            fcmd.RetainCard = 0;
+            return fcmd;
+        }
+    }
+}

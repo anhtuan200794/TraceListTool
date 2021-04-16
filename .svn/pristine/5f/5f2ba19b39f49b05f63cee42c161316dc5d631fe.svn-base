@@ -1,0 +1,107 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+using System.IO;
+
+namespace TraceList
+{
+    public partial class ExportCVS : Form
+    {
+        public DataTable dataSource;
+
+        public ExportCVS()
+        {
+            InitializeComponent();
+        }
+
+        private void ExportCVS_Load(object sender, EventArgs e)
+        {
+            if (dataSource != null)
+            {
+                for (int i = 0; i < dataSource.Columns.Count; i++)
+                {
+                    clbAvailableFields.Items.Add(dataSource.Columns[i].Caption);
+                }
+            }
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void btnExport_Click(object sender, EventArgs e)
+        {
+            string fileName = "";
+            StreamWriter stw = null;
+            int i, j;
+
+            if (dataSource != null)
+            {
+                saveFileDialog.Filter = "Comma File (*.csv)|*.csv";
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        fileName = saveFileDialog.FileName;
+                        stw = new StreamWriter(fileName);
+                        string line = "";
+
+                        // Header Row
+                        for ( j = 0; j < clbAvailableFields.CheckedItems.Count; j++)
+                        {
+
+                            string item = (string)clbAvailableFields.CheckedItems[j];
+                            if (!String.IsNullOrEmpty(item))
+                            {
+                                line += String.IsNullOrEmpty(line) ? item : "," + item;
+                            }
+                        }
+                        stw.WriteLine(line);
+
+                        for ( i = 0; i < dataSource.Rows.Count; i++)
+                        {
+                            line = "";
+                            DataRow row = dataSource.Rows[i];
+                            for ( j = 0; j < clbAvailableFields.CheckedItems.Count; j++)
+                            {
+                                
+                                string item = (string)clbAvailableFields.CheckedItems[j];
+                                if (!String.IsNullOrEmpty(item))
+                                {
+                                    string content = Convert.ToString(row[item]);
+                                    if (content.Contains(","))
+                                    {
+                                        content = content.Replace(",", "");
+                                    }
+                                    
+                                    line += String.IsNullOrEmpty(line) ? content : "," + content;
+                                }
+                            }
+                            stw.WriteLine(line);
+                        }
+
+                        btnCancel.Text = "&Close";
+                        MessageBox.Show("The process has finished", "Done!");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error occurred while exporting data \r\n" + ex.Message, "Error");
+                    }
+                    finally
+                    {
+                        if (stw != null)
+                        {
+                            stw.Flush();
+                            stw.Close();
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

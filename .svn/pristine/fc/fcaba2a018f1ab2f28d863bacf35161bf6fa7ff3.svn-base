@@ -1,0 +1,122 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Data;
+
+namespace TraceList
+{
+    class TransactionInfo
+    {
+        public int Id;
+        public string ConsumerName;
+        public string CardNumber;
+        public string Opkey;
+        public string TransType;
+        public long Amount;
+        public string Date;
+        public string StartTime;
+        public string EndTime;
+        public int TransId;
+        public string ReceiptData;
+        public string DispStr;
+        public long DispensedAmt;
+        public string[] NoteDispensed;
+        public List<string> MessageTracker;
+        public List<string> ErrorCodeList;
+        public DBD_TRANS_STEP TranStep;
+        public string Rollover;
+        public string ReturnCode;
+        public string TransInfo;
+
+        public TransactionInfo()
+        {
+            TranStep = DBD_TRANS_STEP.UNKNOWN;
+            NoteDispensed = new string[4];
+            MessageTracker = new List<string>();
+            ErrorCodeList = new List<string>();
+        }
+
+        public string DumpInfo()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("======== Transaction Info =======");
+            sb.AppendLine("Start Time --- " + this.StartTime + "--------");
+            sb.AppendLine("OpKey: " + this.Opkey);
+            sb.AppendLine(String.Format("Amount: {0:c}", this.Amount));
+            sb.AppendLine("PAN: " + this.CardNumber);
+            sb.AppendLine("Consumer Name: " + this.ConsumerName);
+            sb.AppendLine();
+            sb.AppendLine("Tran Id: " + this.TransId.ToString("0000"));
+            sb.AppendLine("Dispense String: " + this.DispStr);
+            sb.AppendLine("Dispensed: ");
+            sb.AppendLine("   Cassette 1: " + NoteDispensed[0]);
+            sb.AppendLine("   Cassette 2: " + NoteDispensed[1]);
+            sb.AppendLine("   Cassette 3: " + NoteDispensed[2]);
+            sb.AppendLine("   Cassette 4: " + NoteDispensed[3]);
+            sb.AppendLine("Current Step: " + this.TranStep.ToString());
+            sb.AppendLine("End Time ----"+ this.EndTime +"--------");
+
+            return sb.ToString();
+        }
+
+        public void ResetAllData()
+        {
+            TranStep = DBD_TRANS_STEP.UNKNOWN;
+            Id = 0;
+            ConsumerName = "";
+            CardNumber = "";
+            Opkey = "";
+            TransType = "";
+            Amount = 0;
+            Date = "";
+            StartTime = "";
+            EndTime = "";
+            TransId = 0;
+            ReceiptData = "";
+            DispStr = "";
+            DispensedAmt = 0;
+            NoteDispensed[0] = "00";
+            NoteDispensed[1] = "00";
+            NoteDispensed[2] = "00";
+            NoteDispensed[3] = "00";
+            Rollover = "";
+            ReturnCode = "--";
+            TransInfo = "";
+
+            MessageTracker.Clear();
+            ErrorCodeList.Clear();
+        }
+
+        internal TransactionInfo Clone()
+        {
+            TransactionInfo temp = new TransactionInfo();
+            temp.TranStep = this.TranStep;
+            temp.Id = this.Id;
+            temp.ConsumerName = this.ConsumerName;
+            temp.CardNumber = this.CardNumber;
+            temp.Opkey = this.Opkey;
+            temp.Amount = this.Amount;
+            temp.StartTime = this.StartTime;
+            temp.EndTime = this.EndTime;
+            temp.TransId = this.TransId;
+            temp.ReceiptData = this.ReceiptData;
+            temp.DispStr = this.DispStr;
+            temp.NoteDispensed = this.NoteDispensed;
+            temp.Rollover = this.Rollover;
+            temp.TransInfo = this.TransInfo;
+
+            for (int i = 0; i < this.MessageTracker.Count; i++)
+            {
+                temp.MessageTracker.Add(this.MessageTracker[i]);
+            }
+
+            for (int i = 0; i < this.ErrorCodeList.Count; i++)
+            {
+                temp.ErrorCodeList.Add(this.ErrorCodeList[i]);
+            }
+
+            return temp;            
+        }
+    }
+}
